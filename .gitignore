@@ -14,3 +14,4 @@ obj/
 *.json
 *.cache
 *.editorconfig
+**/*.cache
