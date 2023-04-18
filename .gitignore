@@ -1,0 +1,16 @@
+.vscode/
+ignored.txt
+testHardcoded.data
+build/
+*.exe
+*obj
+bin/
+obj/
+*.data
+*.lib
+*.pdb
+*.dll
+*.ilk
+*.json
+*.cache
+*.editorconfig
