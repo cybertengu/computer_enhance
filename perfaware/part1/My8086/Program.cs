@@ -1,4 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
+// See https://aka.ms/new-console-template for more information
 Console.WriteLine("bits 16");
 
 //var fileName = "listing_0037_single_register_mov";
@@ -11,7 +12,8 @@ var fileNames = new string[]{
 //"listing_0049_conditional_jumps",
 //"listing_0051_memory_mov",
 //"listing_0052_memory_add_loop",
-"listing_0054_draw_rectangle"
+//"..\\listing_0054_draw_rectangle",
+"..\\listing_0056_estimating_cycles"
  }; //"listing_0040_challenge_movs"};
 
 foreach(var aFile in fileNames)
@@ -36,6 +38,8 @@ foreach(var aFile in fileNames)
     {
         memory.Add("0");
     }
+
+    UInt16 totalClockCount = 0;
 
     using(var stream = File.Open(aFile, FileMode.Open))
     {
@@ -80,7 +84,7 @@ foreach(var aFile in fileNames)
 
                     //Console.Write($" {firstByte} {secondByte} ");
                     Console.Write($"mov {destination}, {source}");
-                    PerformAction("mov", ref registers, destination, source, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("mov", ref registers, destination, source, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 7) == "1100011")
                 {
@@ -129,7 +133,7 @@ foreach(var aFile in fileNames)
                         result = $"{regFieldEncoding}+{result}";
                         Console.Write($"mov {address}, {result}");
                     }
-                    PerformAction("mov", ref registers, address, result, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("mov", ref registers, address, result, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 6) == "100010")
                 {
@@ -148,17 +152,19 @@ foreach(var aFile in fileNames)
                     var source = isREGSource ? regFieldEncoding : address;
                     var destination = isREGSource ? address : regFieldEncoding;
 
-                    //Console.WriteLine($"\n Contents 1: {regFieldEncoding} {address} {result}");
-                    if(destination.Contains('+') || isByteData == false)
-                    {
-                        destination = $"word {destination}";
-                    }
-                    if(source.Contains('+') && source.ElementAt(source.IndexOf('+') - 1) != '[')
-                    {
-                        source = $"word {source}";
-                    }
+                    //Console.WriteLine($"\n Contents 1: {regFieldEncoding} {address}");
+                    //if(destination.Contains('+') || isByteData == false)
+                    //{
+                    //    Console.WriteLine("Inside this not byte.");
+                        //destination = $"word {destination}";
+                    //}
+                    //if(source.Contains('+') && source.ElementAt(source.IndexOf('+') - 1) != '[')
+                    //{
+                    //    Console.WriteLine("Inside the next if statement.");
+                        //source = $" {source}";
+                    //}
                     Console.Write($"mov {destination}, {source}");
-                    PerformAction("mov", ref registers, destination, source, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("mov", ref registers, destination, source, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 6) == "000000")
                 {
@@ -178,7 +184,7 @@ foreach(var aFile in fileNames)
                     var destination = isREGSource ? address : regFieldEncoding;
                     //Console.WriteLine($"\n Contents: {regFieldEncoding} {address} {source} ");
                     Console.Write($"add {destination}, {source}");
-                    PerformAction("add", ref registers, destination, source, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("add", ref registers, destination, source, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 6) == "100000" && instruction.Substring(10, 3) == "000")
                 {
@@ -215,7 +221,7 @@ foreach(var aFile in fileNames)
 
                     //Console.Write($" addtesting {firstByte} {secondByte} ");
                     Console.Write($"add {destination}, {source}");
-                    PerformAction("add", ref registers, destination, source, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("add", ref registers, destination, source, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 7) == "0000010")
                 {
@@ -238,7 +244,7 @@ foreach(var aFile in fileNames)
 
                     Console.Write($" {firstByte} {secondByte} ");
                     Console.Write($"add {destination}, {source}");
-                    PerformAction("add", ref registers, destination, source, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("add", ref registers, destination, source, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 6) == "001010")
                 {
@@ -258,7 +264,7 @@ foreach(var aFile in fileNames)
                     var destination = isREGSource ? address : regFieldEncoding;
 
                     Console.Write($"sub {destination}, {source}");
-                    PerformAction("sub", ref registers, destination, source, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("sub", ref registers, destination, source, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 6) == "100000" && instruction.Substring(10, 3) == "101")
                 {
@@ -292,7 +298,7 @@ foreach(var aFile in fileNames)
                     var destination = address;
 
                     Console.Write($"sub {destination}, {source}");
-                    PerformAction("sub", ref registers, destination, source, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("sub", ref registers, destination, source, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 7) == "0010110")
                 {
@@ -315,7 +321,7 @@ foreach(var aFile in fileNames)
 
                     //Console.Write($" {firstByte} {secondByte} ");
                     Console.Write($"sub {destination}, {source}");
-                    PerformAction("sub", ref registers, destination, source, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("sub", ref registers, destination, source, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 // CMP
                 else if(instruction.Substring(0, 6) == "001110")
@@ -336,7 +342,7 @@ foreach(var aFile in fileNames)
                     var destination = isREGSource ? address : regFieldEncoding;
 
                     Console.Write($"cmp {destination}, {source}");
-                    PerformAction("cmp", ref registers, destination, source, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("cmp", ref registers, destination, source, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 6) == "100000" && instruction.Substring(10, 3) == "111")
                 {
@@ -370,7 +376,7 @@ foreach(var aFile in fileNames)
                     var destination = address;
 
                     Console.Write($"cmp {destination}, {source}");
-                    PerformAction("cmp", ref registers, destination, source, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("cmp", ref registers, destination, source, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 7) == "0011110")
                 {
@@ -393,7 +399,7 @@ foreach(var aFile in fileNames)
 
                     //Console.Write($" {firstByte} {secondByte} ");
                     Console.Write($"cmp {destination}, {source}");
-                    PerformAction("cmp", ref registers, destination, source, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("cmp", ref registers, destination, source, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 // Jumps
                 else if(instruction.Substring(0, 8) == "01110101")
@@ -404,73 +410,73 @@ foreach(var aFile in fileNames)
                     {
                         var valueToMinus = Int16.Parse(destination) - 254;
                         Console.Write($"jne ${valueToMinus} ;");
-                        PerformAction("jne", ref registers, valueToMinus.ToString(), string.Empty, originalIP.ToString("x"), ref currentIP, ref memory);
+                        PerformAction("jne", ref registers, valueToMinus.ToString(), string.Empty, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                     }
                     else
                     {
                         Console.Write($"jne {destination} ;");
-                        PerformAction("jne", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory);
+                        PerformAction("jne", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                     }
                 }
                 else if(instruction.Substring(0, 8) == "01110100")
                 {
                     var destination = Convert.ToUInt16(secondByte, 2).ToString();
                     Console.Write($"je {destination}");
-                    PerformAction("je", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("je", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 8) == "01111100")
                 {
                     var destination = Convert.ToUInt16(secondByte, 2).ToString();
                     Console.Write($"jl {destination}");
-                    PerformAction("jl", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("jl", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 8) == "01111110")
                 {
                     var destination = Convert.ToUInt16(secondByte, 2).ToString();
                     Console.Write($"jle {destination}");
-                    PerformAction("jle", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("jle", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 8) == "01110010")
                 {
                     var destination = Convert.ToUInt16(secondByte, 2).ToString();
                     Console.Write($"jb {destination}");
-                    PerformAction("jb", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("jb", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 8) == "01110110")
                 {
                     var destination = Convert.ToUInt16(secondByte, 2).ToString();
                     Console.Write($"jbe {destination}");
-                    PerformAction("jbe", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("jbe", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 8) == "01111010")
                 {
                     var destination = Convert.ToUInt16(secondByte, 2).ToString();
                     Console.Write($"jp {destination}");
-                    PerformAction("jp", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("jp", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 8) == "01110000")
                 {
                     var destination = Convert.ToUInt16(secondByte, 2).ToString();
                     Console.Write($"jo {destination}");
-                    PerformAction("jo", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("jo", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 8) == "01111000")
                 {
                     var destination = Convert.ToUInt16(secondByte, 2).ToString();
                     Console.Write($"js {destination}");
-                    PerformAction("js", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("js", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 8) == "01110101")
                 {
                     var destination = Convert.ToUInt16(secondByte, 2).ToString();
                     Console.Write($"jnz {destination}");
-                    PerformAction("jnz", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("jnz", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 8) == "01111101")
                 {
                     var destination = Convert.ToUInt16(secondByte, 2).ToString();
                     Console.Write($"jnl {destination}");
-                    PerformAction("jnl", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("jnl", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 8) == "01111111")
                 {
@@ -481,55 +487,55 @@ foreach(var aFile in fileNames)
                 {
                     var destination = Convert.ToUInt16(secondByte, 2).ToString();
                     Console.Write($"jnb {destination}");
-                    PerformAction("jnb", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("jnb", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 8) == "01110111")
                 {
                     var destination = Convert.ToUInt16(secondByte, 2).ToString();
                     Console.Write($"jnbe {destination}");
-                    PerformAction("jnbe", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("jnbe", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 8) == "01111011")
                 {
                     var destination = Convert.ToUInt16(secondByte, 2).ToString();
                     Console.Write($"jnp {destination}");
-                    PerformAction("jnp", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("jnp", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 8) == "01110001")
                 {
                     var destination = Convert.ToUInt16(secondByte, 2).ToString();
                     Console.Write($"jno {destination}");
-                    PerformAction("jno", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("jno", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 8) == "01111001")
                 {
                     var destination = Convert.ToUInt16(secondByte, 2).ToString();
                     Console.Write($"jns {destination}");
-                    PerformAction("jns", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("jns", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 8) == "11100010")
                 {
                     var destination = Convert.ToUInt16(secondByte, 2).ToString();
                     Console.Write($"loop {destination}");
-                    PerformAction("loop", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("loop", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 8) == "11100001")
                 {
                     var destination = Convert.ToUInt16(secondByte, 2).ToString();
                     Console.Write($"loopz {destination}");
-                    PerformAction("loopz", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("loopz", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 8) == "11100000")
                 {
                     var destination = Convert.ToUInt16(secondByte, 2).ToString();
                     Console.Write($"loopnz {destination}");
-                    PerformAction("loopnz", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("loopnz", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
                 else if(instruction.Substring(0, 8) == "11100011")
                 {
                     var destination = Convert.ToUInt16(secondByte, 2).ToString();
                     Console.Write($"jcxz {destination}");
-                    PerformAction("jcxz", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory);
+                    PerformAction("jcxz", ref registers, destination, string.Empty, originalIP.ToString("x"), ref currentIP, ref memory, ref totalClockCount);
                 }
 
                 Console.WriteLine();
@@ -545,6 +551,10 @@ foreach(var aFile in fileNames)
     {
         //Console.WriteLine(key);
         //Console.WriteLine(registers[key]);
+        if(key.Contains('+'))
+        {
+            continue;
+        }
         if(registers[key] == "0x0" || registers[key] == "0" || registers[key] == "")
         {
             memory[memoryIndex] = "0000";
@@ -564,7 +574,7 @@ foreach(var aFile in fileNames)
     }
 
     Console.WriteLine();
-    
+    /*
     using (var stream = File.Open("test.data", FileMode.Create))
     {
         using (var writer = new BinaryWriter(stream, System.Text.Encoding.UTF8, false))
@@ -603,6 +613,7 @@ foreach(var aFile in fileNames)
             }
         }
     }
+    */
 }
 
 bool DoesHexNumberHaveLeadingBit(string hex)
@@ -617,8 +628,9 @@ bool DoesHexNumberHaveLeadingBit(string hex)
             hex[0] != '7';
 }
 
-void PerformAction(string action, ref Dictionary<string, string> registers, string destination, string source, string originalIPString, ref UInt16 currentIP, ref List<string> memory)
+void PerformAction(string action, ref Dictionary<string, string> registers, string destination, string source, string originalIPString, ref UInt16 currentIP, ref List<string> memory, ref UInt16 totalClockCount)
 {
+    PrintClockCount(action, destination, source, ref totalClockCount);
     var currentIPString = currentIP.ToString("x");
     switch(action)
     {
@@ -665,6 +677,7 @@ void PerformAction(string action, ref Dictionary<string, string> registers, stri
             }
             else if(destination.Contains('+'))
             {
+                //Console.WriteLine("Saw a plus symbol.");
                 containsComplexWord = true;
                 var tokens = destination.Split('+');
                 var firstToken = tokens[0].Split('[')[1].Trim();
@@ -682,14 +695,28 @@ void PerformAction(string action, ref Dictionary<string, string> registers, stri
                 }
                 destinationValue = (UInt16)outcome;
             }
-            else if(destination.Contains('['))
+            else if(destination.Contains('[') && destination.Contains("word "))
             {
+                //Console.WriteLine("Saw a [ symbol.");
                 var tokens = destination.Split("word ");
                 var content = tokens[1].Substring(1, tokens[1].Length - 2);
                 destinationValue = UInt16.Parse(registers[content], System.Globalization.NumberStyles.AllowHexSpecifier);
             }
+            else if(destination.Contains("word") && !destination.Contains('+'))
+            {
+                var tokens = destination.Split("word ");
+                var content = tokens[1];
+                //Console.WriteLine(content);
+                destinationValue = UInt16.Parse(registers[content], System.Globalization.NumberStyles.AllowHexSpecifier);
+            }
+            else if(destination.Contains('['))
+            {
+                var content = destination.Substring(1, destination.Length - 2);
+                destinationValue = UInt16.Parse(registers[content], System.Globalization.NumberStyles.AllowHexSpecifier);
+            }
             else
             {
+                //Console.WriteLine("I didn't do anything.");
                 originalHex = registers[destination];
             }
             var isNumber = UInt16.TryParse(source, out UInt16 sourceValue);
@@ -706,10 +733,11 @@ void PerformAction(string action, ref Dictionary<string, string> registers, stri
                 var addressValue = UInt16.Parse(registers[registerValues[0].Trim()], System.Globalization.NumberStyles.AllowHexSpecifier) + UInt16.Parse(registers[registerValues[1].Trim()], System.Globalization.NumberStyles.AllowHexSpecifier);
                 sourceValue = UInt16.Parse(memory.ElementAt(addressValue), System.Globalization.NumberStyles.AllowHexSpecifier);
             }
-            else if(source.Contains('['))
+            else if(source.Contains('[') && isNumber)
             {
                 var tokens = source.Split('[');
                 var addressValue = tokens[1].Substring(0, tokens[1].Length - 1).Trim();
+                //Console.WriteLine(addressValue);
                 sourceValue = UInt16.Parse(memory.ElementAt(UInt16.Parse(addressValue)), System.Globalization.NumberStyles.AllowHexSpecifier);
             }
             
@@ -720,18 +748,18 @@ void PerformAction(string action, ref Dictionary<string, string> registers, stri
                 if(!originalHex.Equals(hex))
                 //Console.WriteLine($"\nWhat is the hex? {hex} {destination} {sourceValue} {registers[destination]}");
                 {
-                    Console.Write($" ; {destination}:0x{originalHex}->0x{hex} ");
+                    Console.Write($" | {destination}:0x{originalHex}->0x{hex} ");
                 }
                 else
                 {
-                    Console.Write($" ; ");
+                    Console.Write($" | ");
                 }
             }
             else
             {
                 memory[destinationValue] = hex;
                 //Console.WriteLine($"\n{memory[destinationValue]} {sourceValue}");
-                Console.Write(" ; ");
+                Console.Write(" | ");
             }
             Console.Write($"ip:0x{originalIPString}->0x{currentIPString}");
         } break;
@@ -787,7 +815,8 @@ void PerformAction(string action, ref Dictionary<string, string> registers, stri
             registers["flags"] = newFlags;
 
             registers[destination] = hex;
-            Console.Write($" ; {destination}:0x{originalHex}->0x{hex} ip:0x{originalIPString}->0x{currentIPString} flags:{originalFlags}->{newFlags}");
+
+            Console.Write($" | {destination}:0x{originalHex}->0x{hex} ip:0x{originalIPString}->0x{currentIPString} flags:{originalFlags}->{newFlags}");
         } break;
         case "cmp":
         {
@@ -813,13 +842,40 @@ void PerformAction(string action, ref Dictionary<string, string> registers, stri
             }
             registers["flags"] = newFlags;
 
-            Console.Write($" ; ip:0x{originalIPString}->0x{currentIPString} flags:{originalFlags}->{newFlags}");
+            Console.Write($" | ip:0x{originalIPString}->0x{currentIPString} flags:{originalFlags}->{newFlags}");
         } break;
         case "add":
         {
             var originalFlags = registers["flags"];
-            var originalHex = registers[destination];
-            var destinationValue = UInt16.Parse(registers[destination], System.Globalization.NumberStyles.AllowHexSpecifier);
+            var destinationValue = 0;
+            var originalHex = "0";
+            if(destination.Contains('['))
+            {
+                //Console.WriteLine("Saw a left bracket.");
+                //containsComplexWord = true;
+                var tokens = destination.Split('+');
+                var firstToken = tokens[0].Split('[')[1].Trim();
+                var secondToken = tokens[1].Split(']')[0].Trim();
+                // TODO: This assumed the register value is the first token.
+                var isSecondTokenANumber = UInt16.TryParse(secondToken, out UInt16 secondTokenValue);
+                int outcome = 0;
+                if(isSecondTokenANumber)
+                {
+                    outcome = UInt16.Parse(registers[firstToken], System.Globalization.NumberStyles.AllowHexSpecifier) + secondTokenValue;
+                }
+                else
+                {
+                    outcome = UInt16.Parse(registers[firstToken], System.Globalization.NumberStyles.AllowHexSpecifier) + UInt16.Parse(registers[secondToken], System.Globalization.NumberStyles.AllowHexSpecifier);
+                }
+                destinationValue = (UInt16)outcome;
+            }
+            else
+            {
+                originalHex = registers[destination];
+                //Console.WriteLine($"\nhex {originalHex}");
+                destinationValue = UInt16.Parse(registers[destination], System.Globalization.NumberStyles.AllowHexSpecifier);
+            }
+
             var isNumber = UInt16.TryParse(source, out UInt16 sourceValue);
             //Console.WriteLine($"\n{destination} {source} {sourceValue}");
             if(!isNumber)
@@ -870,7 +926,12 @@ void PerformAction(string action, ref Dictionary<string, string> registers, stri
             if(evenCount % 2 == 0)
             {
                 newFlags += "P";
+                if(originalHex == "0")
+                {
+                    newFlags += "Z";
+                }
             }
+            
 
             if(isCarry)
             {
@@ -878,7 +939,7 @@ void PerformAction(string action, ref Dictionary<string, string> registers, stri
             }
             registers["flags"] = newFlags;
             registers[destination] = hex;
-            Console.Write($" ; ");
+            Console.Write($" | ");
             if(originalHex != hex)
             {    
                 Console.Write($"{destination}:0x{originalHex}->0x{hex} ip:0x{originalIPString}->0x{currentIPString} ");
@@ -898,13 +959,130 @@ void PerformAction(string action, ref Dictionary<string, string> registers, stri
                 currentIPString = currentIP.ToString("x");
             }
 
-            Console.Write($" ip:0x{originalIPString}->0x{currentIPString}");
+            Console.Write($" | ip:0x{originalIPString}->0x{currentIPString}");
         } break;
         default:
         {
             Console.Write($" Could not handle {action} ");
         } break;
     }
+}
+
+bool IsARegister(string destination)
+{
+    var destinationContainsALetter = destination.Contains('a') || 
+             destination.Contains('b') ||
+              destination.Contains('c') ||
+               destination.Contains('x') ||
+                destination.Contains('i');
+    destinationContainsALetter = destinationContainsALetter && !destination.Contains('[');
+    return destinationContainsALetter;
+}
+
+void PrintClockCount(string action, string destination, string source, ref UInt16 totalClockCount)
+{
+    UInt16 result = 0;
+    //Console.WriteLine($"\n{action} {destination} {source}");
+    Console.Write($" ; Clocks: +");
+    switch(action)
+    {
+        case "add":
+        {
+            var isNumber = UInt16.TryParse(source, out UInt16 sourceValue);
+            if(IsARegister(destination) && isNumber)
+            {
+                result = 4;
+                totalClockCount += result;
+                Console.Write($"{result} = {totalClockCount}");
+            }
+	    else if(IsARegister(destination) && IsARegister(source))
+	    {
+		result = 3;
+		totalClockCount += result;
+		Console.Write($"{result} = {totalClockCount}");
+	    }
+	    else if(IsADisplacementWithBaseOrIndex(destination) && IsARegister(source))
+	    {
+		result = 16 + 9;
+		totalClockCount += result;
+		Console.Write($"{result} = {totalClockCount} (9 + 9ea)");
+	    }
+        } break;
+        case "mov":
+        {
+            bool isSourceMemory = false;
+            if(source.Contains("[") && !source.Contains('+'))
+            {
+                source = source.Substring(1, source.Length - 2);
+                isSourceMemory = true;
+            }
+            var isNumber = UInt16.TryParse(source, out UInt16 sourceValue);
+            if(IsARegister(destination) && isNumber && !isSourceMemory)
+            {
+                result = 4;
+                totalClockCount += result;
+                Console.Write($"{result} = {totalClockCount}");
+            }
+            else if(IsARegister(destination) && isSourceMemory && isNumber)
+            {
+                result = 8 + 6;
+                totalClockCount += result;
+                Console.Write($"{result} = {totalClockCount} (8 + 6ea)");
+            }
+            else if(IsARegister(destination) && isSourceMemory && IsBaseIndexOnly(source))
+            {
+                result = 8 + 5;
+                totalClockCount += result;
+                Console.Write($"{result} = {totalClockCount} (8 + 5ea)");
+            }
+            else if(IsARegister(destination) && IsARegister(source))
+            {
+                result = 2;
+                totalClockCount += result;
+                Console.Write($"{result} = {totalClockCount}");
+            }
+            else if(IsBaseIndexOnly(destination) && IsARegister(source))
+            {
+                result = 9 + 5;
+                totalClockCount += result;
+                Console.Write($"{result} = {totalClockCount} (9 + 5ea)");
+            }
+            else if(IsARegister(destination) && IsADisplacementWithBaseOrIndex(source))
+            {
+	//	Console.WriteLine("\nDid this happened?");
+          	result = 8 + 9;
+		totalClockCount += result;
+		Console.Write($"{result} = {totalClockCount} (8 + 9ea)");
+	    }
+	    else if(IsADisplacementWithBaseOrIndex(destination) && IsARegister(source))
+	    {
+		result += 9 + 9;
+		totalClockCount += result;
+		Console.Write($"{result} = {totalClockCount} (9 + 9)");
+	    }
+        } break;
+    }
+}
+
+bool IsADisplacementWithBaseOrIndex(string source)
+{
+    bool result = false;
+
+    if(source.Contains('+') && source.Contains('['))
+    {
+        var tokens = source.Split('+');
+        var firstToken = tokens[0].Substring(1);
+        var secondToken = tokens[1].Substring(0, tokens[1].Length - 1);
+        //Console.WriteLine($"\n{firstToken} {secondToken}");
+        result = true;
+    }
+
+    return result;
+}
+
+bool IsBaseIndexOnly(string source)
+{
+    return !source.Contains("+") && (source.Contains("bx") || source.Contains("bp") || source.Contains("si") || source.Contains("di"));
 }
 
 string GetREGFieldEncoding(string reg, bool isByteData)
@@ -1253,7 +1431,7 @@ string GetRMFieldEncodingValue(string rm, bool isByteData, string mod, List<byte
                     ++currentIP;
                     var word = secondByte + firstByte;
                     var value = Convert.ToUInt16(word, 2).ToString();
-                    result = $"[+{value}";
+                    result += $"{value}";
                 }
                 else if(mod == "01")
                 {
