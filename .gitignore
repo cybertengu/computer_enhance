@@ -15,3 +15,4 @@ obj/
 *.cache
 *.editorconfig
 **/*.cache
+.vs/*
