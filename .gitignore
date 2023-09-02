@@ -15,6 +15,9 @@ obj/
 *.cache
 *.f64
 *.json
+*.ll
+*.rdbg
+*.txt
 *.editorconfig
 **/*.cache
 **/.vs/*
