@@ -13,6 +13,8 @@ obj/
 *.ilk
 *.json
 *.cache
+*.f64
+*.json
 *.editorconfig
 **/*.cache
 **/.vs/*
