@@ -112,10 +112,11 @@ ParseHaversinePairs :: proc(json : string, size : i64) -> [dynamic]HaversinePair
 	foundValueCount := 0
 	
 	{
+		innerBlock := BlockStart()
+		defer BlockEnd(innerBlock)
+
 		for index := 0; index < len(json); index += 1
 		{
-			innerBlock := BlockStart()
-			defer BlockEnd(innerBlock)
 			character := json[index]
 			//append(&characters, character)
 			switch character 
