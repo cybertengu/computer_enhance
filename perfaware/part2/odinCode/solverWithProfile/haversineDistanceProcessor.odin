@@ -114,6 +114,8 @@ ParseHaversinePairs :: proc(json : string, size : i64) -> [dynamic]HaversinePair
 	{
 		for index := 0; index < len(json); index += 1
 		{
+			innerBlock := BlockStart()
+			defer BlockEnd(innerBlock)
 			character := json[index]
 			//append(&characters, character)
 			switch character 
@@ -190,5 +192,22 @@ main :: proc()
 		json := transmute(string)content
 		pairs := ParseHaversinePairs(json, size)
 		SumHaversineDistances(pairs, size)
+		Multiply(2235, 452)
 	}	
+}
+
+Multiply :: proc(a : u32, b : u32, result : u32 = 0) -> u32
+{
+	block := BlockStart()
+	defer BlockEnd(block)
+
+	if b <= 0
+	{
+		return result
+	}
+
+	sum := result + a
+	reduce := b - 1
+	
+	return Multiply(a, reduce, sum)
 }

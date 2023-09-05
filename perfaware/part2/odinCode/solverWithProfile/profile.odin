@@ -30,10 +30,24 @@ profileBlock :: struct
 
 BlockStart :: proc(label_ := #caller_location) -> profileBlock
 {
-	globalAnchorIndex += 1
-	assert(globalAnchorIndex < 4096, "Number of profile points exceeds size of profiler.anchors array")
 	parentIndex := globalProfilerParent
+
+	if globalAnchorIndex > 0
+	{
+		if globalPriorCaller.procedure != label_.procedure
+		{
+			globalPriorCaller = label_
+			globalAnchorIndex += 1
+		}
+	}
+	else
+	{
+		globalPriorCaller = label_
+		globalAnchorIndex += 1
+	}
+	assert(globalAnchorIndex < 4096, "Number of profile points exceeds size of profiler.anchors array")
 	globalProfilerParent = globalAnchorIndex
+
 	return profileBlock{ label_, ReadCPUTimer(), parentIndex, globalAnchorIndex }
 }
 
@@ -55,6 +69,7 @@ BlockEnd :: proc(block : profileBlock)
 globalProfiler : profiler
 globalProfilerParent : u32
 globalAnchorIndex : u32
+globalPriorCaller : runtime.Source_Code_Location
 
 PrintTimeElapsed :: proc(totalTSCElapsed : u64, anchor : ^profileAnchor)
 {
