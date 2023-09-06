@@ -10,7 +10,7 @@ import "core:bytes"
 
 ReadEntireFile :: proc(name : string) -> ([]u8, i64)
 {
-	block := BlockStart()
+	block := BlockStart(#procedure)
 	defer BlockEnd(block)
 
 	openFile, _ := os.open(name, os.O_RDONLY)
@@ -30,7 +30,7 @@ HaversinePair :: struct
 
 SumHaversineDistances :: proc(pairs : [dynamic]HaversinePair, size : i64)
 {
-	block := BlockStart()
+	block := BlockStart(#procedure)
 	defer BlockEnd(block)
 	
 	sum : f64
@@ -102,7 +102,7 @@ SumHaversineDistances :: proc(pairs : [dynamic]HaversinePair, size : i64)
 
 ParseHaversinePairs :: proc(json : string, size : i64) -> [dynamic]HaversinePair
 {
-	block := BlockStart()
+	block := BlockStart(#procedure)
 	defer BlockEnd(block)
 	
 	pairs :	[dynamic]HaversinePair
@@ -112,7 +112,7 @@ ParseHaversinePairs :: proc(json : string, size : i64) -> [dynamic]HaversinePair
 	foundValueCount := 0
 	
 	{
-		innerBlock := BlockStart()
+		innerBlock := BlockStart("Lookup and Convert")
 		defer BlockEnd(innerBlock)
 
 		for index := 0; index < len(json); index += 1
@@ -193,22 +193,6 @@ main :: proc()
 		json := transmute(string)content
 		pairs := ParseHaversinePairs(json, size)
 		SumHaversineDistances(pairs, size)
-		Multiply(2235, 452)
 	}	
 }
 
-Multiply :: proc(a : u32, b : u32, result : u32 = 0) -> u32
-{
-	block := BlockStart()
-	defer BlockEnd(block)
-
-	if b <= 0
-	{
-		return result
-	}
-
-	sum := result + a
-	reduce := b - 1
-	
-	return Multiply(a, reduce, sum)
-}

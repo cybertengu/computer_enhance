@@ -8,7 +8,7 @@ profileAnchor :: struct
 	TSCElapsedExclusive : u64,
 	TSCElapsedInclusive : u64,
 	hitCount : u64,
-	label : runtime.Source_Code_Location,
+	label : string,
 }
 
 profiler :: struct
@@ -21,20 +21,20 @@ profiler :: struct
 
 profileBlock :: struct
 {
-	label : runtime.Source_Code_Location,
+	label : string,
 	oldTSCElapsedInclusive : u64,
 	startTSC : u64,
 	parentIndex : u32,
 	anchorIndex : u32,
 }
 
-BlockStart :: proc(label_ := #caller_location) -> profileBlock
+BlockStart :: proc(label_ : string) -> profileBlock
 {
 	parentIndex := globalProfilerParent
 
 	if globalAnchorIndex > 0
 	{
-		if globalPriorCaller.procedure != label_.procedure
+		if globalPriorCaller != label_
 		{
 			globalPriorCaller = label_
 			globalAnchorIndex += 1
@@ -47,11 +47,11 @@ BlockStart :: proc(label_ := #caller_location) -> profileBlock
 	}
 	assert(globalAnchorIndex < 4096, "Number of profile points exceeds size of profiler.anchors array")
 
+	globalProfilerParent = globalAnchorIndex
 	anchorIndex := globalAnchorIndex
 	anchor := globalProfiler.anchors[anchorIndex]
 	oldTSCElapsedInclusive := anchor.TSCElapsedInclusive
 
-	globalProfilerParent = globalAnchorIndex
 	startTSC := ReadCPUTimer()
 
 	return profileBlock{ label_, oldTSCElapsedInclusive, startTSC, parentIndex, anchorIndex }
@@ -76,12 +76,12 @@ BlockEnd :: proc(block : profileBlock)
 globalProfiler : profiler
 globalProfilerParent : u32
 globalAnchorIndex : u32
-globalPriorCaller : runtime.Source_Code_Location
+globalPriorCaller : string
 
 PrintTimeElapsed :: proc(totalTSCElapsed : u64, anchor : ^profileAnchor)
 {
 	percent := 100 * (cast(f64)anchor.TSCElapsedExclusive / cast(f64)totalTSCElapsed)
-	fmt.printf("  %s[%d]: %d (%.2f%%", anchor.label.procedure, anchor.hitCount, anchor.TSCElapsedExclusive, percent)
+	fmt.printf("  %s[%d]: %d (%.2f%%", anchor.label, anchor.hitCount, anchor.TSCElapsedExclusive, percent)
 
 	if anchor.TSCElapsedInclusive != anchor.TSCElapsedExclusive
 	{
